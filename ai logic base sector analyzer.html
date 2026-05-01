@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Logic-Based Sector Analyzer</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: rgba(255, 255, 255, 0.08);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #8b5cf6;
+      --good: #22c55e;
+      --mid: #f59e0b;
+      --bad: #ef4444;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1e1b4b, var(--bg));
+      color: var(--text);
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 980px;
+    }
+
+    .hero {
+      margin-bottom: 18px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(139, 92, 246, 0.16);
+      color: #c4b5fd;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 2.2rem;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      outline: none;
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #8b5cf6, #4f46e5);
+      color: white;
+    }
+
+    .primary:hover {
+      transform: translateY(-1px);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .results {
+      display: grid;
+      gap: 14px;
+    }
+
+    .score-box {
+      text-align: center;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .score {
+      font-size: 3rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .rating {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .insight {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .small-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="hero">
+      <div class="badge">Logic-Based Analyzer</div>
+      <h1>AI Logic-Based Sector Analyzer</h1>
+      <p>
+        Enter sector details and this dashboard will generate a smart score, trend analysis,
+        and a clear recommendation using rule-based logic.
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Sector Input</h2>
+        <p class="small-note">
+          Use values from 1 to 10. Higher numbers mean stronger demand, growth, or automation potential.
+        </p>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label for="sectorName">Sector Name</label>
+            <input id="sectorName" type="text" placeholder="Example: E-commerce, Education, FinTech" />
+          </div>
+
+          <div class="field">
+            <label for="demand">Market Demand (1-10)</label>
+            <input id="demand" type="number" min="1" max="10" value="7" />
+          </div>
+
+          <div class="field">
+            <label for="growth">Growth Trend (1-10)</label>
+            <input id="growth" type="number" min="1" max="10" value="7" />
+          </div>
+
+          <div class="field">
+            <label for="competition">Competition Level (1-10)</label>
+            <input id="competition" type="number" min="1" max="10" value="6" />
+          </div>
+
+          <div class="field">
+            <label for="automation">Automation Potential (1-10)</label>
+            <input id="automation" type="number" min="1" max="10" value="7" />
+          </div>
+
+          <div class="field">
+            <label for="startupCost">Startup Cost Pressure (1-10)</label>
+            <input id="startupCost" type="number" min="1" max="10" value="5" />
+          </div>
+
+          <div class="field full">
+            <label for="notes">Extra Notes</label>
+            <textarea id="notes" placeholder="Example: local market is expanding fast, low technical barriers, strong online adoption."></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" id="analyzeBtn">Analyze Sector</button>
+          <button class="secondary" id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div class="card results">
+        <h2>Analysis Result</h2>
+
+        <div class="score-box">
+          <p class="score" id="score">--</p>
+          <div class="rating" id="rating">No analysis yet</div>
+        </div>
+
+        <div class="insight" id="summary">
+          Fill the form and click <strong>Analyze Sector</strong> to see the result.
+        </div>
+
+        <div class="insight">
+          <strong>Key Signals</strong>
+          <div class="chips" id="chips">
+            <span class="chip">Demand</span>
+            <span class="chip">Growth</span>
+            <span class="chip">Competition</span>
+            <span class="chip">Automation</span>
+            <span class="chip">Cost</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sectorName = document.getElementById("sectorName");
+    const demand = document.getElementById("demand");
+    const growth = document.getElementById("growth");
+    const competition = document.getElementById("competition");
+    const automation = document.getElementById("automation");
+    const startupCost = document.getElementById("startupCost");
+    const notes = document.getElementById("notes");
+
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const scoreEl = document.getElementById("score");
+    const ratingEl = document.getElementById("rating");
+    const summaryEl = document.getElementById("summary");
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function getValue(input) {
+      return clamp(Number(input.value) || 0, 1, 10);
+    }
+
+    function analyzeSector() {
+      const sector = sectorName.value.trim() || "Unnamed Sector";
+
+      const d = getValue(demand);
+      const g = getValue(growth);
+      const c = getValue(competition);
+      const a = getValue(automation);
+      const s = getValue(startupCost);
+
+      const demandScore = d * 20;
+      const growthScore = g * 20;
+      const automationScore = a * 18;
+      const competitionScore = (11 - c) * 12;
+      const costScore = (11 - s) * 10;
+
+      const finalScore = Math.round(
+        demandScore + growthScore + automationScore + competitionScore + costScore
+      );
+
+      let rating = "";
+      let recommendation = "";
+      let colorClass = "";
+
+      if (finalScore >= 80) {
+        rating = "High Potential";
+        recommendation =
+          "This sector looks strong. Demand, growth, and automation potential are all favorable. It is a good candidate for a project, startup idea, or career focus.";
+        colorClass = "good";
+      } else if (finalScore >= 55) {
+        rating = "Moderate Potential";
+        recommendation =
+          "This sector has opportunities, but competition or cost may need attention. A focused strategy and niche positioning would help.";
+        colorClass = "mid";
+      } else {
+        rating = "Low Potential";
+        recommendation =
+          "This sector appears challenging right now. High competition or weak growth may reduce its attractiveness unless you have a unique advantage.";
+        colorClass = "bad";
+      }
+
+      const noteText = notes.value.trim();
+      const extraNote = noteText
+        ? ` Additional note: ${noteText}`
+        : "";
+
+      scoreEl.textContent = finalScore + "/100";
+      scoreEl.style.color =
+        colorClass === "good" ? "var(--good)" : colorClass === "mid" ? "var(--mid)" : "var(--bad)";
+      ratingEl.textContent = `${sector} — ${rating}`;
+      ratingEl.style.color =
+        colorClass === "good" ? "var(--good)" : colorClass === "mid" ? "var(--mid)" : "var(--bad)";
+
+      summaryEl.innerHTML = `
+        <strong>${sector}</strong> scored <strong>${finalScore}/100</strong>.
+        ${recommendation}${extraNote}
+        <br><br>
+        <strong>Logic used:</strong> higher demand, stronger growth, higher automation potential,
+        lower competition, and lower startup cost increase the score.
+      `;
+    }
+
+    function resetForm() {
+      sectorName.value = "";
+      demand.value = 7;
+      growth.value = 7;
+      competition.value = 6;
+      automation.value = 7;
+      startupCost.value = 5;
+      notes.value = "";
+
+      scoreEl.textContent = "--";
+      scoreEl.style.color = "var(--text)";
+      ratingEl.textContent = "No analysis yet";
+      ratingEl.style.color = "var(--text)";
+      summaryEl.innerHTML =
+        'Fill the form and click <strong>Analyze Sector</strong> to see the result.';
+    }
+
+    analyzeBtn.addEventListener("click", analyzeSector);
+    resetBtn.addEventListener("click", resetForm);
+  </script>
+</body>
+</html>
